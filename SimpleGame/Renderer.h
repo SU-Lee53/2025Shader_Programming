@@ -16,6 +16,9 @@ public:
 	bool IsInitialized();
 	void DrawSolidRect(float x, float y, float z, float size, float r, float g, float b, float a);
 
+	// Lecture 2 (09.08)
+	void DrawTest();
+
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
 	bool ReadFile(char* filename, std::string *target);
@@ -31,5 +34,8 @@ private:
 
 	GLuint m_VBORect = 0;
 	GLuint m_SolidRectShader = 0;
+
+	// Lecture 2 (09.08)
+	GLuint m_VBOTest = 0;
 };
 
