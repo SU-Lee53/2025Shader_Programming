@@ -241,7 +241,6 @@ void Renderer::DrawTest()
 
 	// m_SolidRectShader 프로그램에서 a_Position 이라는 Attribute Location 을 가져와라
 	int aPosLoc = glGetAttribLocation(m_SolidRectShader, "a_Position");
-	int aColorLoc = glGetAttribLocation(m_SolidRectShader, "a_Color");
 	// 직접 Get 하기 싫다면 layout(location = n) 을 사용하고
 	// glEnableVertexAttribArray(n); 을 사용한다
 
@@ -254,12 +253,13 @@ void Renderer::DrawTest()
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	// Lecture 3 (09.09)
-	//glEnableVertexAttribArray(aColorLoc);
-	//glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
-	//glVertexAttribPointer(
-	//	aColorLoc, 4, GL_FLOAT,
-	//	GL_FALSE, sizeof(float) * 4, 0);	// size 와 stride 가 바뀌어야 함
-	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	int aColorLoc = glGetAttribLocation(m_SolidRectShader, "a_Color");
+	glEnableVertexAttribArray(aColorLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
+	glVertexAttribPointer(
+		aColorLoc, 4, GL_FLOAT,
+		GL_FALSE, sizeof(float) * 4, 0);	// size 와 stride 가 바뀌어야 함
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	glDisableVertexAttribArray(aPosLoc);
 	glDisableVertexAttribArray(aColorLoc);

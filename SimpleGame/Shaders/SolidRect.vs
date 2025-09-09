@@ -22,5 +22,5 @@ void main()
 	gl_Position = newPosition;
 	// gl_Position : D3D의 System value 와 비슷함, -1 ~ 1 사이의 Projection 된 좌표를 가짐
 
-	v_Color = u_Color;
+	v_Color = a_Color;
 }
