@@ -55,8 +55,8 @@ void Renderer::CreateVertexBufferObjects()
 		 1.f,	 1.f,	0.f,	// Triangle 1
 	};
 
-	glGenBuffers(1, &m_VBOTest);	// GPU가 VBO를 만들고 그 ID 를 testID 에 보관 -> ID 만 생성하고 GPU 메모리는 할당하지 않음
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTest);
+	glGenBuffers(1, &m_VBOTestPos);	// GPU가 VBO를 만들고 그 ID 를 testID 에 보관 -> ID 만 생성하고 GPU 메모리는 할당하지 않음
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestPos);
 	/*
 	    + --------------- +
 		| GL_ARRAY_BUFFER | 
@@ -69,6 +69,24 @@ void Renderer::CreateVertexBufferObjects()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(test), test, GL_STATIC_DRAW); 
 	// Bind된 VBO(testID) 에 데이터를 할당함 -> 이 함수의 호출로 실제 메모리가 VRAM에 잡힘
 	// 함수 특성상 Async 하고 시간이 오래 걸릴 수 있음
+
+	// Lecture 3 (09.09)
+	// 정점 색상 추가
+	// 채널별 RGBA 0.f ~ 1.0 사이의 값을 가짐
+	float testColor[]
+		=
+	{
+		 1.f,	0.f,	0.f,	1.f,
+		 0.f,	1.f,	0.f,	1.f,
+		 0.f,	0.f,	1.f,	1.f		// Triangle 1
+	};
+
+	glGenBuffers(1, &m_VBOTestColor);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(testColor), testColor, GL_STATIC_DRAW);
+	
+
+
 
 }
 
@@ -221,17 +239,30 @@ void Renderer::DrawTest()
 	glUniform4f(glGetUniformLocation(m_SolidRectShader, "u_Trans"), 0, 0, 0, 1);
 	glUniform4f(glGetUniformLocation(m_SolidRectShader, "u_Color"), 1, 1, 1, 1);
 
-	int attribPosition = glGetAttribLocation(m_SolidRectShader, "a_Position");
-	glEnableVertexAttribArray(attribPosition);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTest);
+	// m_SolidRectShader 프로그램에서 a_Position 이라는 Attribute Location 을 가져와라
+	int aPosLoc = glGetAttribLocation(m_SolidRectShader, "a_Position");
+	int aColorLoc = glGetAttribLocation(m_SolidRectShader, "a_Color");
+	// 직접 Get 하기 싫다면 layout(location = n) 을 사용하고
+	// glEnableVertexAttribArray(n); 을 사용한다
 
+	// Enable 해야 사용이 가능함(바로 아래 Bind, AttribPorinter 등)
+	glEnableVertexAttribArray(aPosLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestPos);	// Bind 해주어야 아래 AttribPointer 같은 작업이 가능
 	glVertexAttribPointer(
-		attribPosition, 3, GL_FLOAT, 
+		aPosLoc, 3, GL_FLOAT, 
 		GL_FALSE, sizeof(float) * 3, 0); // VBO 를 어떻게 해석할지 정보를 지정함
-
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-	glDisableVertexAttribArray(attribPosition);
+	// Lecture 3 (09.09)
+	//glEnableVertexAttribArray(aColorLoc);
+	//glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
+	//glVertexAttribPointer(
+	//	aColorLoc, 4, GL_FLOAT,
+	//	GL_FALSE, sizeof(float) * 4, 0);	// size 와 stride 가 바뀌어야 함
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	glDisableVertexAttribArray(aPosLoc);
+	glDisableVertexAttribArray(aColorLoc);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
