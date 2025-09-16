@@ -17,7 +17,13 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	m_WindowSizeY = windowSizeY;
 
 	//Load shaders
-	m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs", "./Shaders/SolidRect.fs");
+	m_SolidRectShader = CompileShaders(
+		"./Shaders/SolidRect.vs", 
+		"./Shaders/SolidRect.fs");
+
+	m_TestShader = CompileShaders(
+		"./Shaders/Test.vs", 
+		"./Shaders/Test.fs");
 	
 	//Create VBOs
 	CreateVertexBufferObjects();
@@ -47,12 +53,18 @@ void Renderer::CreateVertexBufferObjects()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(rect), rect, GL_STATIC_DRAW);
 
 	// Lecture 2 (09.08)
-	float test[]
+	float temp = 0.5f;
+	float size = 1.f;
+	float testPos[]
 		=
 	{
-		 0.f,	 0.f,	0.f,
-		 1.f,	 0.f,	0.f,
-		 1.f,	 1.f,	0.f,	// Triangle 1
+		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,
+		 (1.f - temp) * size,	 (0.f - temp) * size,	0.f,
+		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,	// Triangle 1
+
+		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,
+		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,
+		 (0.f - temp) * size,	 (1.f - temp) * size,	0.f,	// Triangle 2 (09.16)
 	};
 
 	glGenBuffers(1, &m_VBOTestPos);	// GPU가 VBO를 만들고 그 ID 를 testID 에 보관 -> ID 만 생성하고 GPU 메모리는 할당하지 않음
@@ -66,7 +78,7 @@ void Renderer::CreateVertexBufferObjects()
 
 		나중에 VBO를 찾아갈 때 GL_ARRAY_BUFFER 안에 있는 testID를 찾아 리소스를 read/write 하게됨
 	*/
-	glBufferData(GL_ARRAY_BUFFER, sizeof(test), test, GL_STATIC_DRAW); 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(testPos), testPos, GL_STATIC_DRAW); 
 	// Bind된 VBO(testID) 에 데이터를 할당함 -> 이 함수의 호출로 실제 메모리가 VRAM에 잡힘
 	// 함수 특성상 Async 하고 시간이 오래 걸릴 수 있음
 
@@ -78,7 +90,11 @@ void Renderer::CreateVertexBufferObjects()
 	{
 		 1.f,	0.f,	0.f,	1.f,
 		 0.f,	1.f,	0.f,	1.f,
-		 0.f,	0.f,	1.f,	1.f		// Triangle 1
+		 0.f,	0.f,	1.f,	1.f,	// Triangle 1
+
+		 1.f,	0.f,	0.f,	1.f,
+		 0.f,	1.f,	0.f,	1.f,
+		 0.f,	0.f,	1.f,	1.f		// Triangle 2 (09.16)
 	};
 
 	glGenBuffers(1, &m_VBOTestColor);
@@ -234,13 +250,10 @@ void Renderer::DrawSolidRect(float x, float y, float z, float size, float r, flo
 void Renderer::DrawTest()
 {
 	//Program select
-	glUseProgram(m_SolidRectShader);
+	glUseProgram(m_TestShader);
 
-	glUniform4f(glGetUniformLocation(m_SolidRectShader, "u_Trans"), 0, 0, 0, 1);
-	glUniform4f(glGetUniformLocation(m_SolidRectShader, "u_Color"), 1, 1, 1, 1);
-
-	// m_SolidRectShader 프로그램에서 a_Position 이라는 Attribute Location 을 가져와라
-	int aPosLoc = glGetAttribLocation(m_SolidRectShader, "a_Position");
+	// m_TestShader 프로그램에서 a_Position 이라는 Attribute Location 을 가져와라
+	int aPosLoc = glGetAttribLocation(m_TestShader, "a_Position");
 	// 직접 Get 하기 싫다면 layout(location = n) 을 사용하고
 	// glEnableVertexAttribArray(n); 을 사용한다
 
@@ -250,16 +263,15 @@ void Renderer::DrawTest()
 	glVertexAttribPointer(
 		aPosLoc, 3, GL_FLOAT, 
 		GL_FALSE, sizeof(float) * 3, 0); // VBO 를 어떻게 해석할지 정보를 지정함
-	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	// Lecture 3 (09.09)
-	int aColorLoc = glGetAttribLocation(m_SolidRectShader, "a_Color");
+	int aColorLoc = glGetAttribLocation(m_TestShader, "a_Color");
 	glEnableVertexAttribArray(aColorLoc);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
 	glVertexAttribPointer(
 		aColorLoc, 4, GL_FLOAT,
 		GL_FALSE, sizeof(float) * 4, 0);	// size 와 stride 가 바뀌어야 함
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glDisableVertexAttribArray(aPosLoc);
 	glDisableVertexAttribArray(aColorLoc);

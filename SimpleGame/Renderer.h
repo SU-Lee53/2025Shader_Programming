@@ -40,5 +40,8 @@ private:
 
 	// Lecture 3 (09.09)
 	GLuint m_VBOTestColor = 0;
+
+	// Lecture 4 (09.16)
+	GLuint m_TestShader = 0;
 };
 
