@@ -54,7 +54,7 @@ void Renderer::CreateVertexBufferObjects()
 
 	// Lecture 2 (09.08)
 	float temp = 0.5f;
-	float size = 1.f;
+	float size = 0.1f;
 	float testPos[]
 		=
 	{
@@ -251,6 +251,11 @@ void Renderer::DrawTest()
 {
 	//Program select
 	glUseProgram(m_TestShader);
+
+	// Lecture 4 (09.16)
+	m_Time += 0.00016;
+	int uTimeLoc = glGetUniformLocation(m_TestShader, "u_Time");
+	glUniform1f(uTimeLoc, m_Time);
 
 	// m_TestShader 프로그램에서 a_Position 이라는 Attribute Location 을 가져와라
 	int aPosLoc = glGetAttribLocation(m_TestShader, "a_Position");

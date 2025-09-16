@@ -43,5 +43,8 @@ private:
 
 	// Lecture 4 (09.16)
 	GLuint m_TestShader = 0;
+
+	// Time (added 09.16)
+	float m_Time = 0;
 };
 
