@@ -1,7 +1,6 @@
 #version 330
 
-// 사용자가 정의한 입력값
-in vec3 a_Position;	
+in vec3 a_Position;	// 사용자가 정의한 입력값
 in float a_Radius;
 in vec4 a_Color;
 

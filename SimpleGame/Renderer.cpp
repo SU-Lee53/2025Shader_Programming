@@ -24,9 +24,14 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	m_TestShader = CompileShaders(
 		"./Shaders/Test.vs", 
 		"./Shaders/Test.fs");
+
+	m_ParticleShader = CompileShaders(
+		"./Shaders/Particle.vs", 
+		"./Shaders/Particle.fs");
 	
 	//Create VBOs
 	CreateVertexBufferObjects();
+	GenerateParticles(1000);
 
 	if (m_SolidRectShader > 0 && m_VBORect > 0)
 	{
@@ -58,13 +63,19 @@ void Renderer::CreateVertexBufferObjects()
 	float testPos[]
 		=
 	{
-		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,
-		 (1.f - temp) * size,	 (0.f - temp) * size,	0.f,
-		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,	// Triangle 1
+		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,	0.5f,
+		 (1.f - temp) * size,	 (0.f - temp) * size,	0.f,	0.5f,
+		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,	0.5f,	
+		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,	0.5f,
+		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,	0.5f,
+		 (0.f - temp) * size,	 (1.f - temp) * size,	0.f,	0.5f,	// Quad1(09.22)
 
-		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,
-		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,
-		 (0.f - temp) * size,	 (1.f - temp) * size,	0.f,	// Triangle 2 (09.16)
+		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,	1.0f,
+		 (1.f - temp) * size,	 (0.f - temp) * size,	0.f,	1.0f,
+		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,	1.0f,	
+		 (0.f - temp) * size,	 (0.f - temp) * size,	0.f,	1.0f,
+		 (1.f - temp) * size,	 (1.f - temp) * size,	0.f,	1.0f,
+		 (0.f - temp) * size,	 (1.f - temp) * size,	0.f,	1.0f	// Quad 2 (09.22)
 	};
 
 	glGenBuffers(1, &m_VBOTestPos);	// GPU가 VBO를 만들고 그 ID 를 testID 에 보관 -> ID 만 생성하고 GPU 메모리는 할당하지 않음
@@ -90,20 +101,22 @@ void Renderer::CreateVertexBufferObjects()
 	{
 		 1.f,	0.f,	0.f,	1.f,
 		 0.f,	1.f,	0.f,	1.f,
-		 0.f,	0.f,	1.f,	1.f,	// Triangle 1
+		 0.f,	0.f,	1.f,	1.f,
+		 1.f,	0.f,	0.f,	1.f,
+		 0.f,	1.f,	0.f,	1.f,
+		 0.f,	0.f,	1.f,	1.f,	// Quad 1 (09.22)
 
 		 1.f,	0.f,	0.f,	1.f,
 		 0.f,	1.f,	0.f,	1.f,
-		 0.f,	0.f,	1.f,	1.f		// Triangle 2 (09.16)
+		 0.f,	0.f,	1.f,	1.f,
+		 1.f,	0.f,	0.f,	1.f,
+		 0.f,	1.f,	0.f,	1.f,
+		 0.f,	0.f,	1.f,	1.f		// Quad 2 (09.22)
 	};
 
 	glGenBuffers(1, &m_VBOTestColor);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestColor);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(testColor), testColor, GL_STATIC_DRAW);
-	
-
-
-
 }
 
 void Renderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -267,7 +280,22 @@ void Renderer::DrawTest()
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestPos);	// Bind 해주어야 아래 AttribPointer 같은 작업이 가능
 	glVertexAttribPointer(
 		aPosLoc, 3, GL_FLOAT, 
-		GL_FALSE, sizeof(float) * 3, 0); // VBO 를 어떻게 해석할지 정보를 지정함
+		GL_FALSE, sizeof(float) * 4, 0); // VBO 를 어떻게 해석할지 정보를 지정함
+	// a_Radius 가 추가된 상황에서 size 는 3이 맞이 맞음
+	// 다만 Stride 는 다음 정점의 시작위치를 알려면 sizeof(float) * 4 만큼 이동해야 하므로 변하지 않음
+
+	// Lecture 6 (09.22)
+	int aRadiusLoc = glGetAttribLocation(m_TestShader, "a_Radius");
+	glEnableVertexAttribArray(aRadiusLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTestPos);	// Bind 해주어야 아래 AttribPointer 같은 작업이 가능
+	glVertexAttribPointer(
+		aRadiusLoc, 1, GL_FLOAT,
+		GL_FALSE, sizeof(float) * 4, 
+		(GLvoid*)(sizeof(float) * 3)); // VBO 를 어떻게 해석할지 정보를 지정함
+
+	// [   x   ][   y   ][   z   ][ Radius ] | [   x   ][   y   ][   z   ][ Radius ] 
+	// a_Radius 의 경우에도 마찬가지로 stride 는 sizeof(float) * 4
+	// 다만 어디서 값을 읽어와야 하는지(마지막 param) 이 달라지는데 float 3개를 건너뛰고(xyz) 읽어오도록 지정함
 
 	// Lecture 3 (09.09)
 	int aColorLoc = glGetAttribLocation(m_TestShader, "a_Color");
@@ -276,10 +304,48 @@ void Renderer::DrawTest()
 	glVertexAttribPointer(
 		aColorLoc, 4, GL_FLOAT,
 		GL_FALSE, sizeof(float) * 4, 0);	// size 와 stride 가 바뀌어야 함
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, 12);
 
 	glDisableVertexAttribArray(aPosLoc);
 	glDisableVertexAttribArray(aColorLoc);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::DrawParticle()
+{
+	GLuint shader = m_ParticleShader;
+	glUseProgram(shader);
+
+	m_Time += 0.00016;
+	int uTimeLoc = glGetUniformLocation(m_TestShader, "u_Time");
+	glUniform1f(uTimeLoc, m_Time);
+
+	int aPosLoc = glGetAttribLocation(m_TestShader, "a_Position");
+	glEnableVertexAttribArray(aPosLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOParticle);	
+	glVertexAttribPointer(
+		aPosLoc, 3, GL_FLOAT,
+		GL_FALSE, sizeof(float) * 8, 0);// x, y, z, value, r, g, b, a -> Stride 는 sizeof(float) * 8
+
+	int aRadiusLoc = glGetAttribLocation(m_TestShader, "a_Radius");
+	glEnableVertexAttribArray(aRadiusLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOParticle);
+	glVertexAttribPointer(
+		aRadiusLoc, 1, GL_FLOAT,
+		GL_FALSE, sizeof(float) * 8,
+		(GLvoid*)(sizeof(float) * 3)); 
+
+	int aColorLoc = glGetAttribLocation(m_TestShader, "a_Color");
+	glEnableVertexAttribArray(aColorLoc);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOParticle);
+	glVertexAttribPointer(
+		aColorLoc, 4, GL_FLOAT,
+		GL_FALSE, sizeof(float) * 8, 
+		(GLvoid*)(sizeof(float) * 4));	// size 와 stride 가 바뀌어야 함
+	glDrawArrays(GL_TRIANGLES, 0, m_VBOParticleVertexCount);
+
+	glDisableVertexAttribArray(aPosLoc);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -288,4 +354,94 @@ void Renderer::GetGLPosition(float x, float y, float *newX, float *newY)
 {
 	*newX = x * 2.f / m_WindowSizeX;
 	*newY = y * 2.f / m_WindowSizeY;
+}
+
+// Lecture 5 (09.22)
+void Renderer::GenerateParticles(int numParticles)
+{
+	int floatCountPerVertex = 3 + 1 + 4;	// (x, y, z), (value), (r, g, b, a)
+	int verticesCountPerParticle= 6;
+	int floatCountPerParticle = floatCountPerVertex * verticesCountPerParticle;
+	int totalVerticesCount = numParticles * verticesCountPerParticle;
+	int totalFloatCount = floatCountPerVertex * totalVerticesCount;
+
+	float* pVertices = new float[totalFloatCount];
+	for (int i = 0; i < numParticles; ++i) {
+		float x, y, z, value, r, g, b, a;
+		x = ((float)rand() / (float)RAND_MAX) * 2.f - 1.f;	// -1.f ~ 1.f
+		y = ((float)rand() / (float)RAND_MAX) * 2.f - 1.f;	// -1.f ~ 1.f
+		z = 0.f;
+		value = (float)rand() / (float)RAND_MAX;
+		r = (float)rand() / (float)RAND_MAX;
+		g = (float)rand() / (float)RAND_MAX;
+		b  = (float)rand() / (float)RAND_MAX;
+		a = (float)rand() / (float)RAND_MAX;
+
+		float size;
+		size = ((float)rand() / (float)RAND_MAX) * 0.01;	// 0~1 은 너무 크므로 적당히 줄임
+
+		int index = i * floatCountPerParticle;
+		pVertices[index] = x - size;	index++;	// v1 좌하단
+		pVertices[index] = y - size;	index++;
+		pVertices[index] = z;			index++;
+		pVertices[index] = value;		index++;
+		pVertices[index] = r;			index++;
+		pVertices[index] = g;			index++;
+		pVertices[index] = b;			index++;
+		pVertices[index] = a;			index++;
+		
+		pVertices[index] = x + size;	index++;	// v2 우상단
+		pVertices[index] = y + size;	index++;
+		pVertices[index] = z;			index++;
+		pVertices[index] = value;		index++;
+		pVertices[index] = r;			index++;
+		pVertices[index] = g;			index++;
+		pVertices[index] = b;			index++;
+		pVertices[index] = a;			index++;
+		
+		pVertices[index] = x - size;	index++;	// v3 좌상단
+		pVertices[index] = y + size;	index++;
+		pVertices[index] = z;			index++;
+		pVertices[index] = value;		index++;
+		pVertices[index] = r;			index++;
+		pVertices[index] = g;			index++;
+		pVertices[index] = b;			index++;
+		pVertices[index] = a;			index++;
+		
+		pVertices[index] = x - size;	index++;	// v4 좌하단
+		pVertices[index] = y - size;	index++;
+		pVertices[index] = z;			index++;
+		pVertices[index] = value;		index++;
+		pVertices[index] = r;			index++;
+		pVertices[index] = g;			index++;
+		pVertices[index] = b;			index++;
+		pVertices[index] = a;			index++;
+		
+		pVertices[index] = x + size;	index++;	// v5 우하단
+		pVertices[index] = y - size;	index++;
+		pVertices[index] = z;			index++;
+		pVertices[index] = value;		index++;
+		pVertices[index] = r;			index++;
+		pVertices[index] = g;			index++;
+		pVertices[index] = b;			index++;
+		pVertices[index] = a;			index++;
+		
+		pVertices[index] = x + size;	index++;	// v6 우상단
+		pVertices[index] = y + size;	index++;
+		pVertices[index] = z;			index++;
+		pVertices[index] = value;		index++;
+		pVertices[index] = r;			index++;
+		pVertices[index] = g;			index++;
+		pVertices[index] = b;			index++;
+		pVertices[index] = a;			index++;
+
+	}
+
+	glGenBuffers(1, &m_VBOParticle);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOParticle);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * totalFloatCount, pVertices, GL_STATIC_DRAW);
+
+	delete[] pVertices;
+
+	m_VBOParticleVertexCount = numParticles * verticesCountPerParticle;
 }
