@@ -14,6 +14,7 @@ public:
 	~Renderer();
 
 	bool IsInitialized();
+	void ReloadAllShaderPrograms();	// Lecture 6 (09.22)
 	void DrawSolidRect(float x, float y, float z, float size, float r, float g, float b, float a);
 
 	// Lecture 2 (09.08)
@@ -24,13 +25,14 @@ public:
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
+	void CompileAllShaderPrograms();	// Lecture 6 (09.23)
+	void DeleteAllShaderPrograms();	// Lecture 6 (09.23)
 	bool ReadFile(char* filename, std::string *target);
 	void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
 	GLuint CompileShaders(char* filenameVS, char* filenameFS);
 	void CreateVertexBufferObjects();
 	void GetGLPosition(float x, float y, float *newX, float *newY);
 	void GenerateParticles(int numParticles);	// Lecture 5 (09.22)
-
 
 	bool m_Initialized = false;
 	
@@ -52,7 +54,7 @@ private:
 	// Time (added 09.16)
 	float m_Time = 0;
 
-	// Lecture 5 (09.22)
+	// Particle (Lecture 5 (09.22))
 	GLuint m_ParticleShader = 0;
 	GLuint m_VBOParticle = 0;
 	int m_VBOParticleVertexCount = 0;

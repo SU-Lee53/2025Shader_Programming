@@ -22,8 +22,8 @@ void main()
 
 	float fValue = (fract(u_Time) * 2) - 1;
 	float rad = (fValue + 1) * c_PI;		// 0 ~ 2PI
-	float x = a_Radius * cos(rad);
-	float y = a_Radius * sin(rad);
+	float x = 0; a_Radius * cos(rad);
+	float y = 0; a_Radius * sin(rad);
 
 	newPosition.xy = newPosition.xy + vec2(x, y);
 	gl_Position = newPosition;
