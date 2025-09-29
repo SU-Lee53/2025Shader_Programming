@@ -58,6 +58,8 @@ private:
 	GLuint m_ParticleShader = 0;
 	GLuint m_VBOParticle = 0;
 	int m_VBOParticleVertexCount = 0;
+	int m_floatCountPerVertex = 0;
+
 
 };
 
