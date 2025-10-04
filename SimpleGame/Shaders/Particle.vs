@@ -97,7 +97,6 @@ void circleParticle()
 		float newX = x + 0.5 * c_Gravity.x * tt;
 		float newY = y + 0.5 * c_Gravity.y * tt;
 
-
 		newPosition.xy += vec2(newX, newY);
 
 		newAlpha = 1.0 - (t / lifeTime);		// a_LifeTime ~ 0

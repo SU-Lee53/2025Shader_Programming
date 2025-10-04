@@ -340,7 +340,7 @@ void Renderer::DrawParticle()
 	GLuint shader = m_ParticleShader;
 	glUseProgram(shader);
 
-	m_Time += 0.00016;
+	m_Time += 0.0016;
 	int uTimeLoc = glGetUniformLocation(m_ParticleShader, "u_Time");
 	glUniform1f(uTimeLoc, m_Time);
 
