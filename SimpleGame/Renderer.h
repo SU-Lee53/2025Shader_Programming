@@ -23,6 +23,9 @@ public:
 	// Lecture 5 (09.22)
 	void DrawParticle();
 
+	// 10.13
+	void DrawGridMesh();
+
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
 	void CompileAllShaderPrograms();	// Lecture 6 (09.23)
@@ -33,7 +36,10 @@ private:
 	void CreateVertexBufferObjects();
 	void GetGLPosition(float x, float y, float *newX, float *newY);
 	void GenerateParticles(int numParticles);	// Lecture 5 (09.22)
+	
+	void CreateGridMesh(int x, int y);	// 10.13
 
+	
 	bool m_Initialized = false;
 	
 	unsigned int m_WindowSizeX = 0;
@@ -60,6 +66,9 @@ private:
 	int m_VBOParticleVertexCount = 0;
 	int m_floatCountPerVertex = 0;
 
-
+	// Grid (10.13)
+	GLuint m_GridMeshShader;
+	GLuint m_GridMeshVertexCount;
+	GLuint m_GridMeshVBO;
 };
 
