@@ -26,6 +26,9 @@ public:
 	// 10.13
 	void DrawGridMesh();
 
+	// 10.14
+	void DrawFullScreenColor(float r, float g, float b, float a);
+
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
 	void CompileAllShaderPrograms();	// Lecture 6 (09.23)
@@ -67,8 +70,12 @@ private:
 	int m_floatCountPerVertex = 0;
 
 	// Grid (10.13)
-	GLuint m_GridMeshShader;
-	GLuint m_GridMeshVertexCount;
-	GLuint m_GridMeshVBO;
+	GLuint m_GridMeshShader = 0;
+	GLuint m_GridMeshVertexCount = 0;
+	GLuint m_GridMeshVBO = 0;
+
+	// FullScreen grid (10.14)
+	GLuint m_VBOFullScreen = 0;
+	GLuint m_FullScreenShader = 0;
 };
 
