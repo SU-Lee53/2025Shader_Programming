@@ -77,5 +77,9 @@ private:
 	// FullScreen grid (10.14)
 	GLuint m_VBOFullScreen = 0;
 	GLuint m_FullScreenShader = 0;
+
+	// RainDrop Position(10.21)
+	float m_Points[100 * 4];
+
 };
 

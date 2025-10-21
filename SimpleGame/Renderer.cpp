@@ -23,7 +23,8 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	CreateVertexBufferObjects();
 
 	// Create Grid Mesh (10.13)
-	CreateGridMesh(50, 50);
+	//CreateGridMesh(1000, 1000);
+	CreateGridMesh(200, 200);	// 1000 이 깔이 좋지만 너무 느려서 줄임
 
 	GenerateParticles(10000);
 
@@ -31,6 +32,21 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	{
 		m_Initialized = true;
 	}
+
+	// 10.21 빗방울 위치
+	for (int i = 0; i < 100; i += 4) {
+		float x = ((float)rand() / (float)RAND_MAX) * 2.f - 1.f;
+		float y = ((float)rand() / (float)RAND_MAX) * 2.f - 1.f;
+		float st = ((float)rand() / (float)RAND_MAX) * 5;
+		float lt = ((float)rand() / (float)RAND_MAX) * 1;
+
+		m_Points[i] = x;
+		m_Points[i + 1] = y;
+		m_Points[i + 2] = st;
+		m_Points[i + 3] = lt;
+
+	}
+
 }
 
 void Renderer::CompileAllShaderPrograms()
@@ -613,10 +629,16 @@ void Renderer::GenerateParticles(int numParticles)
 
 void Renderer::CreateGridMesh(int x, int y)
 {
-	float basePosX = -0.5f;
-	float basePosY = -0.5f;
-	float targetPosX = 0.5f;
-	float targetPosY = 0.5f;
+	//float basePosX = -0.5f;
+	//float basePosY = -0.5f;
+	//float targetPosX = 0.5f;
+	//float targetPosY = 0.5f;
+	
+	// 10.21
+	float basePosX = -1.0f;
+	float basePosY = -1.0f;
+	float targetPosX = 1.0f;
+	float targetPosY = 1.0f;
 
 	int pointCountX = x;
 	int pointCountY = y;
@@ -697,14 +719,18 @@ void Renderer::CreateGridMesh(int x, int y)
 // 10.13
 void Renderer::DrawGridMesh()
 {
+	// Time
+	m_Time += 0.0016;
+
 	int shader = m_GridMeshShader;
 	//Program select
 	glUseProgram(shader);
 
-	// Time
-	m_Time += 0.0016;
 	int uTimeLoc = glGetUniformLocation(shader, "u_Time");
 	glUniform1f(uTimeLoc, m_Time);
+	// 10.21
+	int uPoints = glGetUniformLocation(shader, "u_Points");
+	glUniform4fv(uPoints, 50, m_Points); // 4개의 float 의 array(v) -> 4fv
 
 	int attribPosition = glGetAttribLocation(
 		shader, "a_Position");
