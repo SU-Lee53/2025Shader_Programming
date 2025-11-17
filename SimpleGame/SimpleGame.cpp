@@ -25,9 +25,9 @@ void RenderScene(void)
 		g_bNeedReloadShaderPrograms = false;
 	}
 
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	g_Renderer->DrawFullScreenColor(0.f, 0.f, 0.f, 1.f);
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	//g_Renderer->DrawFullScreenColor(0.f, 0.f, 0.f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Renderer Test
 	// g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
