@@ -29,6 +29,8 @@ public:
 	// 10.14
 	void DrawFullScreenColor(float r, float g, float b, float a);
 
+	void DrawFS();
+
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
 	void CompileAllShaderPrograms();	// Lecture 6 (09.23)
@@ -42,6 +44,8 @@ private:
 	
 	void CreateGridMesh(int x, int y);	// 10.13
 
+	// 11.17
+	GLuint CreatePngTexture(char* filePath, GLuint samplingMethod);
 	
 	bool m_Initialized = false;
 	
@@ -81,5 +85,13 @@ private:
 	// RainDrop Position(10.21)
 	float m_Points[100 * 4];
 
+	GLuint m_FSShader = 0;
+	GLuint m_VBOFS = 0;
+
+	// 11.17
+	GLuint m_RGBTexture = 0;
+
+	// 11.17
+	GLuint m_Texture0 = 0;
 };
 

@@ -1,5 +1,9 @@
 #include "stdafx.h"
 #include "Renderer.h"
+#include "LoadPng.h"
+#include <cassert>
+#include <vector>
+
 
 Renderer::Renderer(int windowSizeX, int windowSizeY)
 {
@@ -27,6 +31,11 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	CreateGridMesh(200, 200);	// 1000 이 깔이 좋지만 너무 느려서 줄임
 
 	GenerateParticles(10000);
+	
+	// 11.17
+	m_RGBTexture = CreatePngTexture("./rgb.png", GL_NEAREST);
+	m_Texture0 = CreatePngTexture("./Youtube_logo.png", GL_NEAREST);
+
 
 	if (m_SolidRectShader > 0 && m_VBORect > 0)
 	{
@@ -72,6 +81,10 @@ void Renderer::CompileAllShaderPrograms()
 		"./Shaders/FullScreen.vs",
 		"./Shaders/FullScreen.fs");
 
+	m_FSShader = CompileShaders(
+		"./Shaders/FS.vs",
+		"./Shaders/FS.fs");
+
 }
 
 void Renderer::DeleteAllShaderPrograms()
@@ -81,6 +94,7 @@ void Renderer::DeleteAllShaderPrograms()
 	glDeleteShader(m_ParticleShader);
 	glDeleteShader(m_GridMeshShader);
 	glDeleteShader(m_FullScreenShader);
+	glDeleteShader(m_FSShader);
 }
 
 bool Renderer::IsInitialized()
@@ -182,6 +196,20 @@ void Renderer::CreateVertexBufferObjects()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fullRect), fullRect, GL_STATIC_DRAW);
 
 
+	float FSRect[]
+		=
+	{
+		-1.f , -1.f , 0.f,
+		-1.f ,1.f , 0.f,
+		1.f , 1.f , 0.f, //Triangle1
+		-1.f , -1.f , 0.f,
+		1.f , 1.f , 0.f,
+		1.f , -1.f , 0.f, //Triangle2
+	};
+
+	glGenBuffers(1, &m_VBOFS);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOFS);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullRect), fullRect, GL_STATIC_DRAW);
 }
 
 void Renderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -629,16 +657,16 @@ void Renderer::GenerateParticles(int numParticles)
 
 void Renderer::CreateGridMesh(int x, int y)
 {
-	//float basePosX = -0.5f;
-	//float basePosY = -0.5f;
-	//float targetPosX = 0.5f;
-	//float targetPosY = 0.5f;
+	float basePosX = -0.5f;
+	float basePosY = -0.5f;
+	float targetPosX = 0.5f;
+	float targetPosY = 0.5f;
 	
 	// 10.21
-	float basePosX = -1.0f;
-	float basePosY = -1.0f;
-	float targetPosX = 1.0f;
-	float targetPosY = 1.0f;
+	//float basePosX = -1.0f;
+	//float basePosY = -1.0f;
+	//float targetPosX = 1.0f;
+	//float targetPosY = 1.0f;
 
 	int pointCountX = x;
 	int pointCountY = y;
@@ -716,6 +744,30 @@ void Renderer::CreateGridMesh(int x, int y)
 	delete[] vertices;
 }
 
+GLuint Renderer::CreatePngTexture(char* filePath, GLuint samplingMethod)
+{
+	//Load Png
+	std::vector<unsigned char> image;
+	unsigned width, height;
+	unsigned error = lodepng::decode(image, width, height, filePath);
+	if (error != 0)
+	{
+		std::cout << "PNG image loading failed:" << filePath << std::endl;
+		assert(0);
+	}
+
+	GLuint temp;
+	glGenTextures(1, &temp);
+	glBindTexture(GL_TEXTURE_2D, temp);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, &image[0]);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, samplingMethod);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, samplingMethod);
+
+	return temp;
+}
+
 // 10.13
 void Renderer::DrawGridMesh()
 {
@@ -725,6 +777,11 @@ void Renderer::DrawGridMesh()
 	int shader = m_GridMeshShader;
 	//Program select
 	glUseProgram(shader);
+
+	int uniformTex = glGetUniformLocation(shader, "u_Texture");
+	glUniform1i(uniformTex, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_Texture0);
 
 	int uTimeLoc = glGetUniformLocation(shader, "u_Time");
 	glUniform1f(uTimeLoc, m_Time);
@@ -771,4 +828,30 @@ void Renderer::DrawFullScreenColor(float r, float g, float b, float a)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glDisable(GL_BLEND);
+}
+
+void Renderer::DrawFS()
+{
+	// Time
+	m_Time += 0.0016;
+
+	const int shader = m_FSShader;
+	glUseProgram(shader);
+
+	glUniform1f(glGetUniformLocation(shader, "u_Time"), m_Time);
+
+	int uniformTex = glGetUniformLocation(shader, "u_RGBTexture");
+	glUniform1i(uniformTex, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_RGBTexture);
+
+	int attribPosition = glGetAttribLocation(shader, "a_Position");
+	glEnableVertexAttribArray(attribPosition);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOFS);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(attribPosition);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

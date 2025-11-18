@@ -4,6 +4,7 @@
 
 in vec3 a_Position;
 
+out vec2 v_UV;
 out vec4 v_Color;
 
 uniform float u_Time;
@@ -14,7 +15,7 @@ const float c_PI = 3.141592;
 // z -> 시작시간 (startTime)
 // w -> 지속시간 (lifeTime)
 //const vec4 c_Points[3] = vec4[](vec4(0, 0.2, 2, 2), 
-//                                vec4(-0.2, -0.2, 3, 3), 
+//                                vec4(-0.2, -0.2, 3, 3),
 //                               vec4(0.2, -0.2, 4, 4));
 
 
@@ -42,6 +43,7 @@ void Flag()
 	gl_Position = newPosition;
 
 	v_Color = vec4(newColor);
+	v_UV = vec2(a_Position.x + 0.5, 0.5 - a_Position.y);
 }
 
 void Wave()
@@ -107,7 +109,7 @@ void RainDrop()
 
 void main()
 {
-	// Flag();
+	Flag();
 	// Wave();
-	RainDrop();
+	// RainDrop();
 }
