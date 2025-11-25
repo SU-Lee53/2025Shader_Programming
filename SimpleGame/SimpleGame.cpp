@@ -27,14 +27,17 @@ void RenderScene(void)
 
 	//g_Renderer->DrawFullScreenColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Renderer Test
 	// g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
 	// g_Renderer->DrawTest();
 	//g_Renderer->DrawParticle();
 	//g_Renderer->DrawGridMesh();
-	g_Renderer->DrawFS();
+	//g_Renderer->DrawFS();
+	//g_Renderer->DrawTexture(1, 1, 1, 1, 1);
+	g_Renderer->DrawFBOs();
+	g_Renderer->DrawDebugTextures();
 
 	glutSwapBuffers();
 }
@@ -67,8 +70,8 @@ void SpecialKeyInput(int key, int x, int y)
 
 int main(int argc, char **argv)
 {
-	int winX = 500;
-	int winY = 500;
+	int winX = 512;
+	int winY = 512;
 
 	// Initialize GL things
 	glutInit(&argc, argv);

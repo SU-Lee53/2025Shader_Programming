@@ -195,7 +195,7 @@ void Digit_Num()
 	FragColor = sampledColor;
 }
 
-void Digit_Num5()
+void Digit_Num_AI()
 {
     // 표시할 값 (0~99999)
     int value = int(u_Time) % 100000;
@@ -238,7 +238,7 @@ void Digit_Num5()
 
 void main()
 {
-    //Circles();
+    Circles();
     //Flag();
     //Q1();
     //Q2();
@@ -248,5 +248,5 @@ void main()
     //Brick_Horizontal2();
     //Digit();
     //Digit_Num();
-    Digit_Num5();
+    //Digit_Num_AI();
 }

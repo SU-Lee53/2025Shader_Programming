@@ -110,6 +110,6 @@ void RainDrop()
 void main()
 {
 	Flag();
-	// Wave();
+	//Wave();
 	// RainDrop();
 }

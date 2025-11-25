@@ -31,6 +31,11 @@ public:
 
 	void DrawFS();
 
+	// 11.25
+	void DrawTexture(float x, float y, float sx, float sy, GLuint TexID);
+	void DrawDebugTextures();
+	void DrawFBOs();
+
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
 	void CompileAllShaderPrograms();	// Lecture 6 (09.23)
@@ -46,6 +51,9 @@ private:
 
 	// 11.17
 	GLuint CreatePngTexture(char* filePath, GLuint samplingMethod);
+
+	// 11.25
+	void CreateFBOs();
 	
 	bool m_Initialized = false;
 	
@@ -108,7 +116,17 @@ private:
 	GLuint m_NumTexture = 0;
 
 
+	// 11.25
+	// Texture
+	GLuint m_TexVBO = 0;
+	GLuint m_TexShader = 0;
 
+	// FBO Color Buffers
+	GLuint m_RTs[5];
+
+
+	// FBOs
+	GLuint m_FBOs[5];
 
 };
 
