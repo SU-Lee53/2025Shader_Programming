@@ -808,8 +808,8 @@ GLuint Renderer::CreatePngTexture(char* filePath, GLuint samplingMethod)
 void Renderer::CreateFBOs()
 {
 	for (int i = 0; i < _countof(m_FBOs); ++i) {
-		glGenTextures(1, &m_RTs[i]);
-		glBindTexture(GL_TEXTURE_2D, m_RTs[i]);
+		glGenTextures(1, &m_RTs_0[i]);
+		glBindTexture(GL_TEXTURE_2D, m_RTs_0[i]);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -829,8 +829,33 @@ void Renderer::CreateFBOs()
 
 		// Attach to FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RTs[i], 0);	// GL_COLOR_ATTACHMENT0 => layout(location = 0)
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,	// GL_COLOR_ATTACHMENT0 => layout(location = 0)
+			GL_TEXTURE_2D, m_RTs_0[i], 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+			GL_RENDERBUFFER, depthBuffer);
+
+		// Check
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			assert(false);
+		}
+
+	}
+	
+	for (int i = 0; i < _countof(m_FBOs); ++i) {
+		glGenTextures(1, &m_RTs_1[i]);
+		glBindTexture(GL_TEXTURE_2D, m_RTs_1[i]);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+		// Attach to FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,	// GL_COLOR_ATTACHMENT1 => layout(location = 1)
+			GL_TEXTURE_2D, m_RTs_1[i], 0);
 
 		// Check
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -913,6 +938,16 @@ void Renderer::DrawFS()
 
 	const int shader = m_FSShader;
 	glUseProgram(shader);
+	
+	// Default
+	// GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	// glDrawBuffers(1, DrawBuffers);
+	
+	// GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT1 };
+	// glDrawBuffers(1, DrawBuffers);
+
+	GLenum DrawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, DrawBuffers);
 
 	glUniform1f(glGetUniformLocation(shader, "u_Time"), m_Time);
 
@@ -985,6 +1020,9 @@ void Renderer::DrawTexture(float x, float y, float sx, float sy, GLuint TexID)
 	int uTrans = glGetUniformLocation(shader, "u_Trans");
 	glUniform2f(uTrans, x, y);
 
+	int uTime = glGetUniformLocation(shader, "u_Time");
+	glUniform1f(uTime, m_Time);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, TexID);
 
@@ -1011,9 +1049,12 @@ void Renderer::DrawTexture(float x, float y, float sx, float sy, GLuint TexID)
 
 void Renderer::DrawDebugTextures()
 {
-	DrawTexture(-0.8, -0.8, 0.2, 0.2, m_RTs[0]);
-	DrawTexture(-0.4, -0.8, 0.2, 0.2, m_RTs[1]);
-	DrawTexture(-0.0, -0.8, 0.2, 0.2, m_RTs[2]);
+	glViewport(0, 0, 512, 512);
+	DrawTexture(0, 0, 1, 1, m_RTs_0[0]);
+
+	//glViewport(0, 0, 512, 512);
+	//DrawTexture(0.5, -0.5, 0.5, 0.5, m_RTs_1[0]);
+	//DrawTexture(-0.0, -0.8, 0.2, 0.2, m_RTs[2]);
 }
 
 void Renderer::DrawFBOs()
@@ -1021,29 +1062,32 @@ void Renderer::DrawFBOs()
 	{
 		// set FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[0]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear after bind
-
-		// Draw
-		DrawParticle();
-	}
-
-	{
-		// set FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[1]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear after bind
-
-		// Draw
-		DrawGridMesh();
-	}
-
-	{
-		// set FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[2]);
+		//glViewport(0, 0, 256, 512);		// -> 파티클이 그려진 프레임버퍼만 반토막남
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear after bind
 
 		// Draw
 		DrawFS();
 	}
+
+	{
+		// set FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[1]);
+		glViewport(0, 0, 512, 512);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear after bind
+	
+		// Draw
+		DrawGridMesh();
+	}
+	//
+	//{
+	//	// set FBO
+	//	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[2]);
+	//	glViewport(0, 0, 512, 512);
+	//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear after bind
+	//
+	//	// Draw
+	//	DrawFS();
+	//}
 
 	// Restore FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

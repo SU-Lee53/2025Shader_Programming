@@ -41,7 +41,7 @@ private:
 	void CompileAllShaderPrograms();	// Lecture 6 (09.23)
 	void DeleteAllShaderPrograms();	// Lecture 6 (09.23)
 	bool ReadFile(char* filename, std::string *target);
-	void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
+	void AddShader(GLuint Shader¤Ç¤¾Program, const char* pShaderText, GLenum ShaderType);
 	GLuint CompileShaders(char* filenameVS, char* filenameFS);
 	void CreateVertexBufferObjects();
 	void GetGLPosition(float x, float y, float *newX, float *newY);
@@ -122,8 +122,8 @@ private:
 	GLuint m_TexShader = 0;
 
 	// FBO Color Buffers
-	GLuint m_RTs[5];
-
+	GLuint m_RTs_0[5];	// ATTACHMENT0 (layout = 0)
+	GLuint m_RTs_1[5];	// ATTACHMENT1 (layout = 1)
 
 	// FBOs
 	GLuint m_FBOs[5];

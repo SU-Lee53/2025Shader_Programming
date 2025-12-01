@@ -1,6 +1,7 @@
 #version 330
 
 layout(location=0) out vec4 FragColor;
+layout(location=1) out vec4 FragColor1;
 
 in vec2 v_UV;
 uniform float u_Time;
@@ -13,7 +14,7 @@ uniform sampler2D u_NumTexture;
 
 const float c_PI = 3.141592f;
 
-void GaussianBlur()
+vec4 GaussianBlur()
 {
 	float sigma = 2.0f;
     float twoSigma2 = 2.0 * sigma * sigma;
@@ -41,10 +42,11 @@ void GaussianBlur()
 
     result /= weightSum;
 
-    FragColor = vec4(result, 1.0);
+    vec4 finalColor = vec4(result, 1.0);
+    return finalColor;
 }
 
-void Test()
+vec4 Test()
 {
 	vec2 newUV = v_UV;
 	float dx = 0.1 * sin(v_UV.y * 2 * c_PI * 3 + u_Time);
@@ -57,10 +59,10 @@ void Test()
 	// sampledColor += texture(u_RGBTexture, vec2(newUV.x + 0.04, newUV.y));
 	// sampledColor /= 5;
 
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Circles()
+vec4 Circles()
 {
 	vec2 newUV = v_UV;      // 0 ~ 1, left top (0,0)
     vec2 center = vec2(0.5, 0.5);
@@ -69,11 +71,11 @@ void Circles()
 
     float value = sin(d  * 4 * c_PI * 4 - u_Time);   // 0 ~ 1
     newColor = vec4(value);
-
-	FragColor = newColor;
+    
+	return newColor;
 }
 
-void Flag()
+vec4 Flag()
 {
 	vec2 newUV = vec2(v_UV.x, 1 - v_UV.y - 0.5);      // 0 ~ 1, left middle (0,0)
     vec4 newColor = vec4(0);
@@ -87,16 +89,16 @@ void Flag()
         newColor = vec4(1);
     }
     else{
-        discard;
+        newColor = vec4(0,0,0,1);
     }
-
-    FragColor = newColor;
+    
+	return newColor;
 }
 
 // 좌표꼬기 시작
 // 시험문제 무조건 나옴
 
-void Q1()
+vec4 Q1()
 {
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
     
@@ -105,10 +107,10 @@ void Q1()
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Q2()
+vec4 Q2()
 {
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
     
@@ -117,10 +119,10 @@ void Q2()
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Q3()
+vec4 Q3()
 {
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
     
@@ -129,10 +131,10 @@ void Q3()
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Brick_Horizontal()
+vec4 Brick_Horizontal()
 {
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
     
@@ -144,10 +146,10 @@ void Brick_Horizontal()
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Brick_Vertical()
+vec4 Brick_Vertical()
 {
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
 
@@ -156,10 +158,10 @@ void Brick_Vertical()
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Brick_Horizontal2()
+vec4 Brick_Horizontal2()
 {
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
     float rCount = 2;
@@ -170,15 +172,15 @@ void Brick_Horizontal2()
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Digit()
+vec4 Digit()
 {
-    FragColor = texture(u_DigitTexture, v_UV);
+    return texture(u_DigitTexture, v_UV);
 }
 
-void Digit_Num()
+vec4 Digit_Num()
 {
     vec2 newUV = v_UV;
 
@@ -192,10 +194,10 @@ void Digit_Num()
     float y = (newUV.y * 0.5) + offY;
 
 	vec4 sampledColor = texture(u_NumTexture, vec2(x, y));
-	FragColor = sampledColor;
+	return sampledColor;
 }
 
-void Digit_Num_AI()
+vec4 Digit_Num_AI()
 {
     // 표시할 값 (0~99999)
     int value = int(u_Time) % 100000;
@@ -233,12 +235,13 @@ void Digit_Num_AI()
     float sy = localUV.y * 0.5 + offY;
 
     // 최종 색상 출력
-    FragColor = texture(u_NumTexture, vec2(sx, sy));
+    vec4 sampledColor = texture(u_NumTexture, vec2(sx, sy));
+	return sampledColor;
 }
 
 void main()
 {
-    Circles();
+    //Circles();
     //Flag();
     //Q1();
     //Q2();
@@ -248,5 +251,7 @@ void main()
     //Brick_Horizontal2();
     //Digit();
     //Digit_Num();
-    //Digit_Num_AI();
+
+    FragColor = Circles();
+    FragColor1 = Flag();
 }
