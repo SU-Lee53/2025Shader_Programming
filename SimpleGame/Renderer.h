@@ -32,9 +32,13 @@ public:
 	void DrawFS();
 
 	// 11.25
-	void DrawTexture(float x, float y, float sx, float sy, GLuint TexID);
+	void DrawTexture(float x, float y, float sx, float sy, 
+		GLuint TexID, GLuint TexID1, GLuint method);
 	void DrawDebugTextures();
 	void DrawFBOs();
+
+	// 12.02
+	void DrawBloomParticles();
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -128,5 +132,17 @@ private:
 	// FBOs
 	GLuint m_FBOs[5];
 
-};
+	// 12.02 HDR + Bloom	
+	GLuint m_HDRRT0_0 = 0;	// float texture
+	GLuint m_HDRRT0_1 = 0;	// float texture
+	GLuint m_HDRFBO0 = 0;	
+	//GLuint m_HDRFBO1 = 0;	
 
+	GLuint m_ParticleTexture = 0;
+
+	// Blur
+	GLuint m_PingpongFBO[2];
+	GLuint m_PingpongTexture[2];
+
+
+};

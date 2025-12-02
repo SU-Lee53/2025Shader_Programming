@@ -3,23 +3,28 @@
 layout(location=0) out vec4 FragColor;
 
 uniform sampler2D u_TexID;
-
+uniform sampler2D u_TexID1;
+uniform int u_Method;       // 0 : normal, 1 : BlurH, 2 : BlurV, 3 : Merge
 uniform float u_Time;
 
 in vec2 v_Tex;
 
 const float c_PI = 3.141592f;
 const float u_Intensity = 5.f;     // 색수차 강도 (필요 시 추가)
+const float weight[5]
+    = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216); // Gaussian Kernel
 
 vec4 ChromaticAberration()
 {
     // 기본 텍스처 좌표
     vec2 uv = vec2(v_Tex.x, 1.0 - v_Tex.y);
 
+    float fNoise = noise1(u_Time * sin(c_PI) * 2) * 10.f;
+
     // 색별 오프셋
-    float rOffset =  u_Intensity * 0.002;
+    float rOffset =  fNoise * 0.002;
     float gOffset =  0.0;                 // 중심 채널 유지
-    float bOffset = -u_Intensity * 0.002;
+    float bOffset = -fNoise * 0.002;
 
     // 좌우로 번지는 형태 (radial 방식도 가능)
     vec2 dir = normalize(uv - vec2(0.5)); // 중심에서 방향 (근거 부족 가능성 → 단순 radial 방식)
@@ -73,9 +78,72 @@ vec4 Pixelization()
     return texture(u_TexID, vec2(tx, ty));
 }
 
+vec4 BlurH()
+{             
+    vec2 tex_offset = 1.0 / textureSize(u_TexID, 0); // gets size of single texel
+    vec3 result = texture(u_TexID, v_Tex).rgb * weight[0]; // current fragment's contribution
+
+    for(int i = 1; i < 5; ++i)
+    {
+        result += texture(u_TexID, v_Tex + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
+        result += texture(u_TexID, v_Tex - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
+    }
+
+    return vec4(result, 1.0);
+}
+
+vec4 BlurV()
+{             
+    vec2 tex_offset = 1.0 / textureSize(u_TexID, 0); // gets size of single texel
+    vec3 result = texture(u_TexID, v_Tex).rgb * weight[0]; // current fragment's contribution
+
+    for(int i = 1; i < 5; ++i)
+    {
+        result += texture(u_TexID, v_Tex + vec2(0.f, tex_offset.y * i)).rgb * weight[i];
+        result += texture(u_TexID, v_Tex - vec2(0.f, tex_offset.y * i)).rgb * weight[i];
+    }
+
+    return vec4(result, 1.0);
+}
+
+vec4 Merge()
+{             
+    const float gamma = 2.2;
+    vec3 hdrColor = texture(u_TexID, vec2(v_Tex.x, 1 - v_Tex.y)).rgb;      
+    vec3 bloomColor = texture(u_TexID1, v_Tex).rgb;
+    hdrColor += bloomColor; 
+
+    // tone mapping
+    float fExposure = 3.0;
+    vec3 result = vec3(1.0) - exp(-hdrColor * fExposure);
+
+    // also gamma correct while we're at it       
+    result = pow(result, vec3(1.0 / gamma));
+    return vec4(result, 1.0);
+} 
+
 void main()
 {
-	FragColor = ChromaticAberration();
-    FragColor *= CRTScanline();
-    FragColor *= Pixelization();
+    FragColor = vec4(0);
+
+    if(u_Method == 0)
+    {
+        FragColor = texture(u_TexID, vec2(v_Tex.x, 1 - v_Tex.y));
+    }
+    else if(u_Method == 1)
+    {
+        FragColor = BlurH();
+    }
+    else if(u_Method == 2)
+    {
+        FragColor = BlurV();
+    }
+    else if(u_Method == 3)
+    {
+        FragColor = Merge();
+    }
+
+	//FragColor = ChromaticAberration();
+    //FragColor *= CRTScanline();
+    //FragColor *= Pixelization();
 }
