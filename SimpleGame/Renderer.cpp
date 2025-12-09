@@ -1031,7 +1031,7 @@ void Renderer::DrawFullScreenColor(float r, float g, float b, float a)
 void Renderer::DrawFS()
 {
 	// Time
-	m_Time += 0.0016;
+	m_Time += 0.016;
 
 	const int shader = m_FSShader;
 	glUseProgram(shader);
@@ -1049,7 +1049,7 @@ void Renderer::DrawFS()
 	glUniform1f(glGetUniformLocation(shader, "u_Time"), m_Time);
 
 	int uTextureLoc = glGetUniformLocation(shader, "u_RGBTexture");
-	glUniform1i(uTextureLoc, 0);
+	glUniform1i(uTextureLoc, 15);
 
 	int uDigitTexLoc = glGetUniformLocation(shader, "u_DigitTexture");
 	glUniform1i(uDigitTexLoc, 10);

@@ -75,6 +75,19 @@ vec4 Circles()
 	return newColor;
 }
 
+vec4 Sin()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y - 0.5f);
+    vec2 center = vec2(0.5, 0.5);
+    vec4 newColor = vec4(0);
+    float sinValue = sin(v_UV.x * 4 * c_PI + u_Time) * 0.5 ;
+    if(distance(newUV.y, sinValue) < 0.05 && newUV.y > sinValue){
+        newColor = vec4(1);
+    }
+
+    return newColor;
+}
+
 vec4 Flag()
 {
 	vec2 newUV = vec2(v_UV.x, 1 - v_UV.y - 0.5);      // 0 ~ 1, left middle (0,0)
@@ -86,7 +99,7 @@ vec4 Flag()
 
     if (newUV.y < sinValue + width &&
         newUV.y > sinValue - width) {
-        newColor = vec4(1);
+        newColor = vec4((sinValue + 1) / 2);
     }
     else{
         newColor = vec4(0,0,0,1);
@@ -127,12 +140,35 @@ vec4 Q3()
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
     
     float x = fract(newUV.x * 3);
+    float y = (2 - floor(newUV.x  * 3)) / 3 + newUV.y / 3;
+
+	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
+    
+	return sampledColor;
+}
+
+vec4 Q4()
+{
+	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
+    
+    float x = fract(newUV.x * 3);
     float y = floor(newUV.x * 3) / 3 + newUV.y / 3;
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
 	return sampledColor;
 }
+
+vec4 Q5()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+    float x = newUV.x;
+    float y = fract(v_UV.y * 3) / 3 + (2 - floor(v_UV.y * 3)) / 3;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
 
 vec4 Brick_Horizontal()
 {
@@ -141,7 +177,8 @@ vec4 Brick_Horizontal()
     //float x = (newUV.x * 2) - ceil(v_UV.y * 2) / 2;
     //float y = newUV.y * 2;
     
-    float x = fract(newUV.x * 2) + floor(newUV.y * 2) * 0.5;
+    //float x = fract(newUV.x * 2) + floor(newUV.y * 2) * 0.5;
+    float x = fract((newUV.x * 2)) + ((floor(newUV.y * 2) * 2) - 1) * fract(u_Time);
     float y = fract(newUV.y * 2);
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
@@ -154,7 +191,9 @@ vec4 Brick_Vertical()
 	vec2 newUV = vec2(v_UV.x, v_UV.y);      // 0 ~ 1, left top (0,0)
 
     float x = fract(newUV.x * 2);
-    float y = fract(newUV.y * 2) - floor(newUV.x * 2) * 0.5;    // -0.5 ~ 1.5
+    //float y = fract(newUV.y * 2) - floor(newUV.x * 2) * 0.5;    // -0.5 ~ 1.5
+    float y = fract((newUV.y * 2) + 0.5);
+
 
 	vec4 sampledColor = texture(u_RGBTexture, vec2(x, y));
     
@@ -239,6 +278,300 @@ vec4 Digit_Num_AI()
 	return sampledColor;
 }
 
+vec4 P1()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float x = fract(v_UV.x * 3);
+    float y = v_UV.y + floor(v_UV.x * 3) / 3;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P2()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+    vec2 center = vec2(0.5, 0.5);
+    float dist = distance(newUV, center);
+
+    vec4 sampledColor = texture(u_RGBTexture, v_UV) * 1 - round(dist);
+    return sampledColor;
+}
+
+vec4 P3()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float x = fract(v_UV.x * 2);
+    float y = fract(v_UV.y * 2);
+    
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P4()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float x =  v_UV.y;
+    float y = 1 - v_UV.x;
+    
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P5()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float x = newUV.x * 2 - 0.5;
+    float y = newUV.y * 2;
+
+    vec4 sampledColor = vec4(0);
+    if(x > 0 && x < 1)
+    {
+        sampledColor = texture(u_RGBTexture, vec2(x,y));
+    }
+    return sampledColor;
+}
+
+vec4 P6()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float shear = 0.06;
+
+    float x = newUV.x - shear * floor(newUV.y * 15);
+    float y = newUV.y;
+    
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P7()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float x = sign((fract(newUV.y * 4) - 0.5) * 2) * abs((fract(newUV.x * 4) - 0.5) * 2);
+    float y = fract(newUV.y * 8);
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    //vec4 sampledColor = vec4(x, 0, 0, 1);
+    return sampledColor;
+}
+
+vec4 P8()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y);
+
+    float x = 1 - abs((fract(v_UV.x) - 0.5) * 2);
+    float y = 1 - abs((fract(v_UV.y) - 0.5) * 2);
+    
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P9()
+{
+    vec2 newUV = v_UV;
+
+    float x = fract(v_UV.x * 4);
+    float y = v_UV.y;
+    
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P10()
+{
+    vec2 newUV = v_UV;
+
+    float x = abs(fract(v_UV.x * 4.0) * 2.0 - 1.0);
+    float y = abs(fract(v_UV.y * 4.0) * 2.0 - 1.0);
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    //vec4 sampledColor = vec4(x, 0, 0, 1);
+    return sampledColor;
+}
+
+vec4 FlagTest()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y - 0.5);
+
+    float width = 0.4 * (1 - newUV.x);
+    float amp = 0.2;
+    float sinValue = amp * sin(newUV.x * 4 * c_PI - u_Time) * newUV.x;
+
+    vec4 newColor = vec4(0);
+
+    if(newUV.y > sinValue - width && newUV.y < sinValue + width){
+        newColor = vec4((sinValue + 1) / 2);
+    }
+
+    return newColor;
+}
+
+vec4 WaterDrop()
+{
+    vec2 newUV = v_UV;
+    vec4 newColor = vec4(0);
+    vec2 center = vec2(0.5, 0.5);
+    float dist = distance(center, newUV);
+
+    float sinValue = (sin(dist * 4 * c_PI - u_Time) + 1) / 2;
+    newColor = vec4(sinValue);
+
+    return newColor;
+}
+
+vec4 P11()
+{
+    vec2 newUV = v_UV;
+    
+    float x = fract(v_UV.x * 3);
+    float y = v_UV.y;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P12()
+{
+    vec2 newUV = v_UV;
+    
+    float x = 1 - abs(fract(v_UV.x) - 0.5) * 2;
+    float y = v_UV.y;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P13()
+{
+    vec2 newUV = v_UV;
+    
+    float x = newUV.x;
+    float y = fract(newUV.y * 3);
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P14()
+{
+    vec2 newUV = v_UV;
+    
+    float x = 1 - abs(fract(v_UV.x * 1.5) - 0.5) * 2;
+    float y = 1 - abs(fract(v_UV.y * 1.5) - 0.5) * 2;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P15()
+{
+    vec2 newUV = v_UV;
+    
+    float x = fract(v_UV.x * 4);
+    float y = v_UV.y + floor(v_UV.x * 4) * 0.25;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P16()
+{
+    vec2 newUV = v_UV;
+    
+    float x = v_UV.x;
+    float y = -abs(fract(v_UV.y * 1.5) - 0.5) * 2;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 P17()
+{
+    vec2 newUV = v_UV;
+    
+    float x = fract(v_UV.x * 3);
+    float y = floor(v_UV.x * 3) / 3 + v_UV.y / 3;
+
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 BrickTestV()
+{
+    vec2 newUV = v_UV;
+
+    float x = fract(newUV.x * 2) + (1 - floor(newUV.y * 2)) * 0.5;
+    float y = fract(newUV.y * 2);
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 BrickTestH()
+{
+    vec2 newUV = v_UV;
+    
+    float x = -sign(mod(floor(v_UV.x * 4), 2) - 0.5) * fract(v_UV.x * 4);
+    float y = 1 - abs(fract(newUV.y * 2) - 0.5) * 2 + floor(newUV.x * 4) * 0.33333333333333;
+
+    vec4 sampledColor = texture(u_RGBTexture, vec2(x,y));
+    return sampledColor;
+}
+
+vec4 Checker()
+{
+    vec2 newUV = v_UV;
+
+    float x = sin(v_UV.x * 8 * c_PI);
+    float y = cos(v_UV.y * 8 * c_PI);
+    vec3 rgb = vec3(x + y);
+
+    vec4 newColor = vec4(rgb, 1.f);
+    return newColor;
+}
+
+vec4 Wave()
+{
+    vec2 newUV = vec2(v_UV.x, v_UV.y - 0.5);
+    vec4 newColor = vec4(0,0,0,1);
+    float sinValue = 0.5 * sin(v_UV.x * 4 * c_PI);
+    float width = 0.01;
+
+    if(newUV.y > sinValue - width && newUV.y < sinValue){
+        newColor = vec4(1);
+    }
+
+    return newColor;
+}
+
+vec4 Circle()
+{
+    vec2 newUV = v_UV;
+    vec2 center = vec2(0.5f, 0.5f);
+    float dist = distance(center, newUV);
+    float radius = 0.25f;
+    float width = 0.01;
+    
+    float sinValue = sin(dist * 4 * c_PI - u_Time);
+
+    float gradient = sin((dist * 2) * c_PI);
+    gradient = pow(gradient, 32);
+
+    vec4 newColor = vec4(sinValue * gradient);
+
+
+    return newColor;
+}
+
 void main()
 {
     //Circles();
@@ -252,6 +585,6 @@ void main()
     //Digit();
     //Digit_Num();
 
-    FragColor = Circles();
-    FragColor1 = Flag();
+    FragColor = Circle();
+    //FragColor1 = Flag();
 }
